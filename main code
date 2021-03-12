@@ -1,0 +1,94 @@
+/*
+Temp(); - TempOpti  >= abs(2+Hyst
+
+
+*/
+#include <Arduino_MKRENV.h>
+#include <Adafruit_NeoPixel.h>//initialisation des bibliothèques
+
+#define FanPin 
+#define LampPin
+#define HeaterPin  //attribution des broches des actionneurs conectés
+
+unsigned long T1,T2,T3 = 0;
+bool EtatCycle = 0;
+int TempMes = 0;
+int HumiMes = 0;
+int TempOpti = 24;
+int HumiOpti = 80;
+int Hyst = 0; //Hystérésis
+
+void setup() {
+  pinMode(13,OUTPUT);
+  Serial.begin(9600);//démarrage de Serial
+  delay(3000);
+
+  if (!ENV.begin()) {
+    Serial.println("Échec du setup");
+    while (1);//initialisation du shield ENV
+  }
+  Serial.println("Setup OK");
+}
+
+void loop() {
+  T1 = millis();
+  T3 = millis();
+  TempMes = ENV.readTemperature();
+  Serial.print("T1 :");
+  Serial.println(T1);
+  Serial.print("T2 :");
+  Serial.println(T2);
+  Serial.print("Temp :");
+  Serial.println(TempMes);
+
+
+  if (abs(T1-T2)>5000){
+    T2 = T1;
+     digitalWrite(13,HIGH);
+     delay(100);
+     digitalWrite(13,LOW);
+     switch ( TempMes ){
+       case TempMes + Hyst <= TempOpti:
+          //baisser la température
+          break;
+        case TempMes - Hyst >= TempOpti:
+          //augmenter la température
+        break;
+        default:
+      } 
+      switch ( HumiMes ){
+       case HumiMes  <= HumiOpti:
+          //Pschit +
+          break;
+        case HumiMes >= HumiOpti:
+          //Pschit -
+        break;
+        default:
+       }
+  }
+  if (T3-T1 > 3600){
+    T3 = T1;
+    switch ( EtatCycle ){
+        case EtatCycle == 1:
+            EtatCycle = 0;
+            break;
+         case EtatCycle == 0:
+            EtatCycle = 1;
+            break;
+        default:
+      }
+      digitalWrite(13,EtatCycle)
+  } 
+delay(10);
+}
+
+
+
+
+
+
+/*
+  Serial.print("Temp = ");
+  Serial.println(Temp());
+  delay(30);//mesure + affichage de la température
+*/
